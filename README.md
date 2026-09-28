@@ -49,6 +49,9 @@ flutter run
 
 Cần kết nối máy ảo/thiết bị trước khi chạy. Hiện app chỉ hiển thị màn hình demo Flutter, chưa kết nối backend.
 
+File framwwork chứa tên đây nha @KhanhVi
+Backend dùng Spring Boot; framework được khai báo trong pom.xml. Ứng dụng di động dùng Flutter, khai báo dependencies trong pubspec.yaml.
+
 ## Thư mục chính
 
 - `src/main/java/`: mã nguồn backend và các entity.
