@@ -7,66 +7,116 @@ Dự án gồm backend Spring Boot, dashboard React/Vite và ứng dụng Flutte
 - JDK 22 (được khai báo trong `pharmacy-backend/pom.xml`); Maven Wrapper đã có sẵn.
 - Node.js 22.12+ và npm để chạy frontend Vite 8.
 - Flutter SDK tương thích với Dart `^3.13.4` nếu chạy ứng dụng di động.
-- SQL Server chỉ cần khi chạy với database thật; chế độ local mặc định dùng H2.
+- SQL Server đã cài trên máy.
 
-## Chạy local
+---
 
-Từ thư mục dự án:
+## Cài đặt lần đầu (chỉ làm 1 lần)
 
-```powershell
-Push-Location .\pharmacy-backend
-.\mvnw.cmd spring-boot:run
-Pop-Location
+### Bước 1 — Bật TCP/IP trong SQL Server Configuration Manager
+
+1. Nhấn **Windows + S**, tìm và mở **SQL Server Configuration Manager**
+2. Ở cột trái, bấm vào **SQL Server Network Configuration → Protocols for MSSQLSERVER**
+3. Nhìn sang cột phải, tìm dòng **TCP/IP** → chuột phải → **Enable**
+4. Ở cột trái, bấm vào **SQL Server Services**
+5. Chuột phải vào **SQL Server (MSSQLSERVER)** → **Restart** để áp dụng thay đổi
+
+### Bước 2 — Tạo database trong SSMS
+
+1. Mở **SQL Server Management Studio (SSMS)**
+2. Kết nối vào server `localhost` bằng **Windows Authentication**
+3. Bấm **New Query**, dán lệnh sau rồi bấm **Execute (F5)**:
+
+```sql
+CREATE DATABASE PharmacyDB;
 ```
 
-Backend chạy ở `http://localhost:8080`. Profile `local` dùng H2 trong bộ nhớ với ba mặt hàng mẫu; dữ liệu được tạo lại khi backend khởi động.
+### Bước 3 — Chạy backend lần đầu
 
-Các màn hình danh mục có đăng nhập Basic Auth trước khi thêm/sửa/xóa. Tài khoản mặc định là `user`; mật khẩu phát triển ngẫu nhiên được in trong terminal backend mỗi lần khởi động và không được lưu trong giao diện.
-
-Mở terminal thứ hai:
+Mở terminal rồi chạy 2 lệnh:
 
 ```powershell
-Push-Location .\web-pharmacy
+cd pharmacy-backend
+.\mvnw.cmd spring-boot:run
+```
+
+App sẽ tự động:
+- Kết nối vào SQL Server
+- Tạo toàn bộ bảng trong `PharmacyDB`
+- Chèn dữ liệu mẫu (nhân viên, khách hàng, sản phẩm, lô thuốc, hóa đơn...)
+
+Backend chạy tại: `http://localhost:8080`
+
+---
+
+## Từ lần sau
+
+Chỉ cần chạy 2 lệnh này, không cần làm gì thêm vì database và dữ liệu đã có sẵn:
+
+```powershell
+cd pharmacy-backend
+.\mvnw.cmd spring-boot:run
+```
+
+---
+
+## Chạy frontend (web)
+
+Mở **terminal mới** (để terminal backend vẫn chạy), sau đó:
+
+```powershell
+cd web-pharmacy
 npm ci
 npm run dev
-Pop-Location
 ```
 
-Dashboard chạy ở `http://localhost:5173` và proxy `/api` tới backend. API đọc kho: `GET http://localhost:8080/api/medicines`.
+Dashboard chạy tại: `http://localhost:5173`
 
-## Ứng dụng di động
+---
 
-Ứng dụng Flutter nằm tại `pharmacy-backend/mobile_pharmacy`. Hiện đây vẫn là skeleton Flutter mặc định, chưa gọi API nghiệp vụ.
+## Ứng dụng di động (Flutter)
 
 ```powershell
-Push-Location .\pharmacy-backend\mobile_pharmacy
+cd pharmacy-backend\mobile_pharmacy
 flutter pub get
 flutter run
-Pop-Location
 ```
 
-## Kết nối SQL Server
+---
 
-Schema `QuanLyNhaThuocDB` được tạo từ `pharmacy-backend/src/main/resources/data.sql` và backend ánh xạ trực tiếp vào `SanPham`/`LoThuoc`. Profile SQL Server dùng Windows Authentication của tài khoản đang chạy backend. Instance `SQLEXPRESS01` cần bật TCP/IP trên loopback và lắng nghe cổng `1433`; bật TCP/IP cần restart dịch vụ SQL Server. Native auth DLL được Maven copy vào `pharmacy-backend/target/native`.
+## Tài khoản mẫu
 
-```powershell
-$env:DB_HOST = 'localhost'
-$env:DB_PORT = '1433'
-$env:DB_NAME = 'QuanLyNhaThuocDB'
-Push-Location .\pharmacy-backend
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=sqlserver"
-Pop-Location
-```
+Sau khi chạy lần đầu, các tài khoản sau được tạo sẵn trong database:
 
-CRUD danh mục: `/api/medicines`, `/api/batches`, `/api/customers`, `/api/employees`, `/api/suppliers`, mỗi nhóm có `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`. GET công khai; thao tác ghi yêu cầu HTTP Basic Auth. Mật khẩu phát triển được Spring in trong log backend; không dùng cơ chế này thay cho tài khoản quản trị production.
+| Vai trò | Username | Mật khẩu |
+|---------|----------|-----------|
+| Admin | `admin` | `admin123` |
+| Dược sĩ | `duocsi` | `duocsi123` |
+| Thủ kho | `thukho` | `thukho123` |
+| Khách hàng | `khachhang1` | `kh123456` |
 
-## Postman
+> Mật khẩu được mã hóa BCrypt trong database, không lưu dạng text thường.
 
-Import `postman/Quan-ly-nha-thuoc.postman_collection.json`. Đặt `apiPassword` trong collection variables thành mật khẩu đang được in trong terminal backend, sau đó chạy collection; các request tạo record tự lưu mã để GET/PUT/DELETE tiếp theo dùng lại. Collection đã được chạy bằng Newman: 25 request, 25 assertion, không lỗi.
+---
 
-SQL Server phải được khởi động với TCP/IP bật; hiện môi trường kiểm tra chưa bật TCP, nên ứng dụng Java chưa thể kết nối tới database dù schema đã được tạo. Tài khoản Windows chạy backend cũng cần quyền đọc/ghi trên `QuanLyNhaThuocDB`.
+## Danh sách API
+
+| Endpoint | Mô tả |
+|----------|-------|
+| `/api/medicines` | Sản phẩm / thuốc |
+| `/api/batches` | Lô thuốc |
+| `/api/customers` | Khách hàng |
+| `/api/employees` | Nhân viên |
+| `/api/suppliers` | Nhà cung cấp |
+
+Mỗi endpoint hỗ trợ: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`
+
+- **GET** công khai, không cần xác thực.
+- **POST / PUT / DELETE** yêu cầu **HTTP Basic Auth** — dùng một trong các tài khoản mẫu ở trên.
+
+---
 
 ## Thư mục
 
-- `pharmacy-backend/`: API Spring Boot, JPA và cấu hình database.
-- `web-pharmacy/`: dashboard React/Vite.
+- `pharmacy-backend/` — API Spring Boot, JPA và cấu hình database
+- `web-pharmacy/` — Dashboard React/Vite

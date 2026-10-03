@@ -26,24 +26,3 @@ public class Invoice {
     private List<InvoiceDetail> invoiceDetails;
 }
 
-@Entity
-@Table(name = "invoice_details")
-@Data
-class InvoiceDetail {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "invoice_id")
-    private Invoice invoice;
-
-    @ManyToOne
-    @JoinColumn(name = "batch_id")
-    private MedicineBatch batch;
-
-    private int quantity;
-
-    private double unitPrice;
-}

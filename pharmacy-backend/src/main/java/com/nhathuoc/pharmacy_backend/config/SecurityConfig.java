@@ -17,7 +17,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                     .requestMatchers(HttpMethod.GET, "/api/medicines/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().denyAll())
+                        .anyRequest().permitAll())
                     .httpBasic(Customizer.withDefaults())
                 .build();
     }
