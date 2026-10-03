@@ -1,59 +1,122 @@
-# Ứng dụng quản lý nhà thuốc
+# Quản lý nhà thuốc
 
-Dự án gồm backend Java Spring Boot và ứng dụng di động Flutter. Hiện đây là dự án đang phát triển, chưa phải ứng dụng hoàn chỉnh để sử dụng thực tế.
+Dự án gồm backend Spring Boot, dashboard React/Vite và ứng dụng Flutter. Backend cung cấp CRUD cho sản phẩm, lô thuốc, khách hàng, nhân viên và nhà cung cấp.
 
-## Cần cài
+## Yêu cầu
 
-- **JDK 17** để chạy backend.
-- **Flutter SDK** tương thích với Dart SDK `^3.13.4` để chạy ứng dụng di động.
-- **SQL Server** và SQL Server Management Studio (SSMS) để tạo/quản lý cơ sở dữ liệu.
-- **Android Studio** nếu muốn chạy app trên máy ảo Android; hoặc điện thoại Android đã bật USB debugging.
-- Có thể dùng **Visual Studio Code** hoặc **IntelliJ IDEA** để mở mã nguồn.
+- JDK 22 (được khai báo trong `pharmacy-backend/pom.xml`); Maven Wrapper đã có sẵn.
+- Node.js 22.12+ và npm để chạy frontend Vite 8.
+- Flutter SDK tương thích với Dart `^3.13.4` nếu chạy ứng dụng di động.
+- SQL Server đã cài trên máy.
 
-Maven Wrapper (`mvnw.cmd`) đã có sẵn trong dự án nên không bắt buộc cài Maven riêng.
+---
 
-## Những gì đã có
+## Cài đặt lần đầu (chỉ làm 1 lần)
 
-- Khung backend Spring Boot, dùng Java 17, Spring Data JPA, Spring Security và SQL Server.
-- Một số entity JPA cho hoạt chất, thuốc, lô thuốc, người dùng, hóa đơn và đơn hàng online.
-- Script SQL Server `src/main/resources/data.sql` mô tả dữ liệu quản lý nhân viên, khách hàng, thuốc, nhà cung cấp, lô thuốc, nhập hàng và đơn hàng; có thêm một số ràng buộc và trigger quản lý tồn kho.
-- Khung ứng dụng Flutter cho Android, iOS, web và desktop.
+### Bước 1 — Bật TCP/IP trong SQL Server Configuration Manager
 
-## Trạng thái hiện tại
+1. Nhấn **Windows + S**, tìm và mở **SQL Server Configuration Manager**
+2. Ở cột trái, bấm vào **SQL Server Network Configuration → Protocols for MSSQLSERVER**
+3. Nhìn sang cột phải, tìm dòng **TCP/IP** → chuột phải → **Enable**
+4. Ở cột trái, bấm vào **SQL Server Services**
+5. Chuột phải vào **SQL Server (MSSQLSERVER)** → **Restart** để áp dụng thay đổi
 
-- Giao diện Flutter hiện vẫn là màn hình demo bộ đếm mặc định, chưa có giao diện nghiệp vụ nhà thuốc.
-- Chưa thấy API nghiệp vụ/controller để ứng dụng Flutter gọi tới backend.
-- Cấu hình SQL Server nằm trong `src/main/resources/application.properties`. Hãy tự thay địa chỉ máy chủ, tên database và thông tin đăng nhập phù hợp với máy của bạn; không chia sẻ mật khẩu trong mã nguồn.
+### Bước 2 — Tạo database trong SSMS
 
-## Chạy backend
+1. Mở **SQL Server Management Studio (SSMS)**
+2. Kết nối vào server `localhost` bằng **Windows Authentication**
+3. Bấm **New Query**, dán lệnh sau rồi bấm **Execute (F5)**:
 
-1. Cài và khởi động SQL Server.
-2. Mở `src/main/resources/data.sql` bằng SSMS và chạy nếu muốn tạo schema theo script. Kiểm tra nội dung script và chọn đúng database trước khi chạy.
-3. Mở `src/main/resources/application.properties`, cập nhật `spring.datasource.url`, username và password. Lưu ý cấu hình hiện trỏ tới database `PharmacyDB`, trong khi script SQL tạo `QuanLyNhaThuocDB`; hai tên này cần được đổi cho khớp.
-4. Tại thư mục gốc dự án, chạy:
+```sql
+CREATE DATABASE PharmacyDB;
+```
 
-   ```powershell
-   .\mvnw.cmd spring-boot:run
-   ```
+### Bước 3 — Chạy backend lần đầu
 
-Backend mặc định chạy tại `http://localhost:8080`.
-
-## Chạy ứng dụng Flutter
-
-Mở terminal tại thư mục `mobile_pharmacy` rồi chạy:
+Mở terminal rồi chạy 2 lệnh:
 
 ```powershell
+cd pharmacy-backend
+.\mvnw.cmd spring-boot:run
+```
+
+App sẽ tự động:
+- Kết nối vào SQL Server
+- Tạo toàn bộ bảng trong `PharmacyDB`
+- Chèn dữ liệu mẫu (nhân viên, khách hàng, sản phẩm, lô thuốc, hóa đơn...)
+
+Backend chạy tại: `http://localhost:8080`
+
+---
+
+## Từ lần sau
+
+Chỉ cần chạy 2 lệnh này, không cần làm gì thêm vì database và dữ liệu đã có sẵn:
+
+```powershell
+cd pharmacy-backend
+.\mvnw.cmd spring-boot:run
+```
+
+---
+
+## Chạy frontend (web)
+
+Mở **terminal mới** (để terminal backend vẫn chạy), sau đó:
+
+```powershell
+cd web-pharmacy
+npm ci
+npm run dev
+```
+
+Dashboard chạy tại: `http://localhost:5173`
+
+---
+
+## Ứng dụng di động (Flutter)
+
+```powershell
+cd pharmacy-backend\mobile_pharmacy
 flutter pub get
 flutter run
 ```
 
-Cần kết nối máy ảo/thiết bị trước khi chạy. Hiện app chỉ hiển thị màn hình demo Flutter, chưa kết nối backend.
+---
 
-File framwwork chứa tên đây nha @KhanhVi
-Backend dùng Spring Boot; framework được khai báo trong pom.xml. Ứng dụng di động dùng Flutter, khai báo dependencies trong pubspec.yaml.
+## Tài khoản mẫu
 
-## Thư mục chính
+Sau khi chạy lần đầu, các tài khoản sau được tạo sẵn trong database:
 
-- `src/main/java/`: mã nguồn backend và các entity.
-- `src/main/resources/`: cấu hình backend và script SQL.
-- `mobile_pharmacy/`: mã nguồn ứng dụng Flutter.
+| Vai trò | Username | Mật khẩu |
+|---------|----------|-----------|
+| Admin | `admin` | `admin123` |
+| Dược sĩ | `duocsi` | `duocsi123` |
+| Thủ kho | `thukho` | `thukho123` |
+| Khách hàng | `khachhang1` | `kh123456` |
+
+> Mật khẩu được mã hóa BCrypt trong database, không lưu dạng text thường.
+
+---
+
+## Danh sách API
+
+| Endpoint | Mô tả |
+|----------|-------|
+| `/api/medicines` | Sản phẩm / thuốc |
+| `/api/batches` | Lô thuốc |
+| `/api/customers` | Khách hàng |
+| `/api/employees` | Nhân viên |
+| `/api/suppliers` | Nhà cung cấp |
+
+Mỗi endpoint hỗ trợ: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`
+
+- **GET** công khai, không cần xác thực.
+- **POST / PUT / DELETE** yêu cầu **HTTP Basic Auth** — dùng một trong các tài khoản mẫu ở trên.
+
+---
+
+## Thư mục
+
+- `pharmacy-backend/` — API Spring Boot, JPA và cấu hình database
+- `web-pharmacy/` — Dashboard React/Vite
